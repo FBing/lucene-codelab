@@ -2,8 +2,6 @@ package com.ricky.codelab.lucene.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -16,10 +14,10 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -27,11 +25,17 @@ import com.ricky.codelab.lucene.model.Shop;
 
 public class ShopIndexer {
 	private String indexPath;
-	private String docsPath;
 	
 	public ShopIndexer(String dirPath){
-		this.indexPath = new File(dirPath, "/index/").getPath();
-		this.docsPath = new File(dirPath, "/docs/").getPath();
+		
+		File indexDir = new File(dirPath, "/index/");
+		if(!indexDir.exists()){
+			indexDir.mkdirs();
+		}
+		
+		this.indexPath = indexDir.getPath();
+		
+		System.out.println("indexPath:"+indexPath);
 	}
 	
 	public void index(List<Shop> shop_list, boolean create) throws IOException{
@@ -45,18 +49,11 @@ public class ShopIndexer {
 		} else {
 			iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 		}
-		
-		Path docDir = Paths.get(docsPath);
-		if (!Files.isReadable(docDir)) {
-			System.out.println("Document directory '" + docDir.toAbsolutePath()
-					+ "' does not exist or is not readable, please check the path");
-			System.exit(1);
-		}
-		
+				
 		IndexWriter writer = new IndexWriter(dir, iwc);
 		try {
 			for (Shop shop : shop_list) {
-				indexDoc(writer, docDir, shop);
+				indexDoc(writer, shop);
 			}
 			// writer.forceMerge(1);
 		}finally{
@@ -64,23 +61,27 @@ public class ShopIndexer {
 		}
 	}
 	
-	private void indexDoc(IndexWriter writer, Path file, Shop shop) throws IOException {
+	private void indexDoc(IndexWriter writer, Shop shop) throws IOException {
 		
 		Document doc = new Document();
 		
-		doc.add(new LongField("id", shop.getId(), Field.Store.NO));
+		doc.add(new LongField("id", shop.getId(), Field.Store.YES));
 		doc.add(new StringField("third_id", shop.getThirdId(), Field.Store.YES));
-		doc.add(new StringField("name", shop.getName(), Field.Store.YES));
+		
+		TextField field = new TextField("name", shop.getName(), Field.Store.YES);
+		if(shop.getId()==10){
+			field.setBoost(2.5f);
+		}
+		doc.add(field);
 		doc.add(new StringField("address", shop.getAddress(), Field.Store.YES));
 		doc.add(new StringField("phone", StringUtils.join(shop.getPhone(), ","), Field.Store.YES));
 		doc.add(new IntField("city_id", shop.getCityId(), Field.Store.YES));
 		doc.add(new DoubleField("lat", shop.getLat(), Field.Store.YES));
 		doc.add(new DoubleField("lng", shop.getLng(), Field.Store.YES));
-
+		
 		if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
 			writer.addDocument(doc);
-		} else {
-			writer.updateDocument(new Term("third_id", file.toString()), doc);
-		}
+			System.out.println("add Document");
+		} 
 	}
 }
