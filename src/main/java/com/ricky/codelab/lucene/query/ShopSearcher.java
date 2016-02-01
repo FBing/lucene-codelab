@@ -1,59 +1,53 @@
 package com.ricky.codelab.lucene.query;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 public class ShopSearcher {
 
 	private String indexPath;
-
-	public ShopSearcher(String dirPath) {
-		this.indexPath = new File(dirPath, "/index/").getPath();
-		System.out.println("indexPath:"+indexPath);
+	private Analyzer analyzer;
+	
+	public ShopSearcher(String indexPath, Analyzer analyzer){
+		this.indexPath = indexPath;
+		this.analyzer = analyzer;
 	}
 
-	public void query(String field, String keyword) throws IOException, ParseException {
+	public void query(String keyword) throws IOException, ParseException {
+
+		String field = "name";
 
 		System.out.println("field:"+field+",keyword:"+keyword);
 		
-		Directory dir = FSDirectory.open(Paths.get(indexPath));
-		IndexReader reader = DirectoryReader.open(dir);
+		IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths
+				.get(indexPath)));
 		IndexSearcher searcher = new IndexSearcher(reader);
-		Analyzer analyzer = new StandardAnalyzer();
-
 		QueryParser parser = new QueryParser(field, analyzer);
 		Query query = parser.parse(keyword);
+		
 		System.out.println("Searching for: " + query.toString(field));
 		
-//		Query query = new TermQuery(new Term(field, keyword));
 		TopDocs results = searcher.search(query, 100);
-//		searcher.search(query, filter, n);
-		int numTotalHits = results.totalHits;
-		System.out.println(numTotalHits + " total matching documents");
-		
 		ScoreDoc[] hits = results.scoreDocs;
-        for (ScoreDoc sd : hits) {
-            Document d = searcher.doc(sd.doc);   
-            System.out.println(d.get("third_id") + ":["+d.get(field)+"]");   
-        }  
-        
-        reader.close();
+		System.out.println("Found " + hits.length + " hits.");
+
+		for (int i = 0; i < hits.length; i++) {
+			Document doc = searcher.doc(hits[i].doc);
+			String title = doc.get(field);
+			System.out.println("title:" + title+",score:"+hits[i].score);
+		}
+
+		reader.close();
 	}
 }
