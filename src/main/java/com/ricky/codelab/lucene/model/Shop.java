@@ -12,6 +12,20 @@ public class Shop {
 	private double lat = -361;
 	private double lng = -361;
 	
+	public Shop(){
+		
+	}
+	public Shop(String third_id, String name, String address,
+			List<String> phone, int city_id, double lat, double lng) {
+		this.third_id = third_id;
+		this.name = name;
+		this.address = address;
+		this.phone = phone;
+		this.city_id = city_id;
+		this.lat = lat;
+		this.lng = lng;
+	}
+	
 	public long getId() {
 		return id;
 	}

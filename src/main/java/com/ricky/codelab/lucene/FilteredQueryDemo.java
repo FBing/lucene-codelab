@@ -1,7 +1,9 @@
 package com.ricky.codelab.lucene;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -14,6 +16,10 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -24,14 +30,11 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
-import com.ricky.codelab.lucene.model.Article;
+import com.ricky.codelab.lucene.model.Shop;
 
 public class FilteredQueryDemo {
 
 	public static void main(String[] args) {
-
-		// Lucene Document的域名
-		String fieldName = "title";
 
 		// 实例化IKAnalyzer分词器
 		Analyzer analyzer = new IKAnalyzer(true);
@@ -49,10 +52,9 @@ public class FilteredQueryDemo {
 			iwConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
 			iwriter = new IndexWriter(directory, iwConfig);
 			// 写入索引
-			addDoc(iwriter, new Article("Spark Tungsten-sort Based Shuffle 分析", "2016-01-02 12:27", "朱威廉"));
-			addDoc(iwriter, new Article("Spark UI (基于Yarn) 分析与定制", "2016-01-01 12:27", "祝威廉 "));
-			addDoc(iwriter, new Article("Spark动态资源分配-Dynamic Resource Allocation", "2016-01-01 16:27", "lxw1234@qq.com"));
-			addDoc(iwriter, new Article("HBase高可用原理与实践", "2015-01-01 16:27", "jiang hongxiang"));
+			addDoc(iwriter, new Shop("1", "肯德基(国展店)", "北京市朝阳区国际展览中心", Arrays.asList("010-9999"), 2, 0, 0));
+			addDoc(iwriter, new Shop("2", "肯德基(太阳宫店)", "北京市朝阳区太阳宫", Arrays.asList("010-8888"), 2, 0, 0));
+			addDoc(iwriter, new Shop("10", "肯德基(国展店)", "上海市宝安区", Arrays.asList("021-5555"), 1, 0, 0));
 			
 			iwriter.close();
 
@@ -61,17 +63,30 @@ public class FilteredQueryDemo {
 			ireader = DirectoryReader.open(directory);
 			isearcher = new IndexSearcher(ireader);
 
-			String keyword = "Spark";
-			Query query = new TermQuery (new Term (fieldName, keyword));
-			System.out.println("query:"+query);
+			String keyword = "肯德基(国展店)";
+			QueryParser qp = new QueryParser("name", analyzer);
+//			qp.setDefaultOperator(QueryParser.AND_OPERATOR);
+			Query name_query = qp.parse(keyword);
+			System.out.println("name_query:"+name_query);
+			
+			Query city_query = new TermQuery (new Term ("city_id", 2+""));
+			System.out.println("city_query:"+city_query);
+			
+			BooleanQuery booleanQuery = new BooleanQuery.Builder()
+				.add(name_query, Occur.MUST)
+				.add(city_query, Occur.MUST)
+				.build();
+			
 			// 搜索相似度最高的5条记录
-			TopDocs topDocs = isearcher.search(query, 5);
+			TopDocs topDocs = isearcher.search(booleanQuery, 5);
 			System.out.println("命中：" + topDocs.totalHits);
 			// 输出结果
 			ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 			for (int i = 0; i < topDocs.totalHits; i++) {
-				Document targetDoc = isearcher.doc(scoreDocs[i].doc);
-				System.out.println("内容：" + targetDoc.toString());
+				Document doc = isearcher.doc(scoreDocs[i].doc);
+				System.out.println("third_id:" + doc.get("third_id")+""+doc.get("name")+
+						",address:"+doc.get("address")+",phone:"+doc.get("phone")+",city_id:"+doc.get("city_id"));
+				
 			}
 
 		} catch (CorruptIndexException e) {
@@ -79,6 +94,8 @@ public class FilteredQueryDemo {
 		} catch (LockObtainFailedException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
 			e.printStackTrace();
 		} finally {
 			if (ireader != null) {
@@ -98,12 +115,15 @@ public class FilteredQueryDemo {
 		}
 	}
 
-	public static void addDoc(IndexWriter iwriter, Article article) throws IOException {
+	public static void addDoc(IndexWriter iwriter, Shop shop) throws IOException {
 		// 写入索引
 		Document doc = new Document();
-		doc.add(new TextField("title", article.getTitle(), Field.Store.YES));
-		doc.add(new StringField("author", article.getAuthor(), Field.Store.YES));
-		doc.add(new StringField("datetime", article.getDatetime(), Field.Store.YES));
+		doc.add(new StringField("third_id", shop.getThirdId(), Field.Store.YES));
+		doc.add(new TextField("name", shop.getName(), Field.Store.YES));
+		doc.add(new StringField("address", shop.getAddress(), Field.Store.YES));
+		doc.add(new StringField("phone", StringUtils.join(shop.getPhone(), ","), Field.Store.YES));
+		doc.add(new StringField("city_id", String.valueOf(shop.getCityId()), Field.Store.YES));
+		
 		iwriter.addDocument(doc);
 	}
 
