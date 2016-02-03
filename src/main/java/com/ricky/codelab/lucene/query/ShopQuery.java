@@ -14,12 +14,12 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
-public class ShopSearcher {
+public class ShopQuery {
 
 	private String indexPath;
 	private Analyzer analyzer;
 	
-	public ShopSearcher(String indexPath, Analyzer analyzer){
+	public ShopQuery(String indexPath, Analyzer analyzer){
 		this.indexPath = indexPath;
 		this.analyzer = analyzer;
 	}

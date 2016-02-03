@@ -35,14 +35,14 @@ public class ShopIndexerTest {
 		
 		List<Shop> shop_list = new ArrayList<>();
 		
-		for(int i=0;i<1000;i++){
+		for(int i=0;i<2000;i++){
 			Shop shop = new Shop();
 			shop.setId(i);
-			shop.setThirdId("999 "+i);
-			shop.setName((i%2==0 ? "KFC":"Subway")+" "+i);
+			shop.setThirdId("999"+i);
+			shop.setName((i%2==0 ? "肯德基(国展店)":"海底捞火锅(太阳宫店)")+" "+i);
 			shop.setAddress("北京市朝阳区静安中心"+i+"室");
 			shop.setPhone(Arrays.asList("010-5762"+i));
-			shop.setCityId(2);
+			shop.setCityId(i%2==0 ?1:2);
 			
 			shop_list.add(shop);
 		}

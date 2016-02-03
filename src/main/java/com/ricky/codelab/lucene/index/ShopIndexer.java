@@ -10,8 +10,8 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -58,12 +58,12 @@ public class ShopIndexer {
 		Document doc = new Document();
 		
 		doc.add(new LongField("id", shop.getId(), Field.Store.YES));
-		doc.add(new TextField("third_id", shop.getThirdId(), Field.Store.YES));
+		doc.add(new StringField("third_id", shop.getThirdId(), Field.Store.YES));
 		doc.add(new TextField("name", shop.getName(), Field.Store.YES));
-		doc.add(new TextField("address", shop.getAddress(), Field.Store.YES));
+		doc.add(new StringField("address", shop.getAddress(), Field.Store.YES));
 		
-		doc.add(new TextField("phone", StringUtils.join(shop.getPhone(), ","), Field.Store.YES));
-		doc.add(new IntField("city_id", shop.getCityId(), Field.Store.YES));
+		doc.add(new StringField("phone", StringUtils.join(shop.getPhone(), ","), Field.Store.YES));
+		doc.add(new StringField("city_id", String.valueOf(shop.getCityId()), Field.Store.YES));
 		doc.add(new DoubleField("lat", shop.getLat(), Field.Store.YES));
 		doc.add(new DoubleField("lng", shop.getLng(), Field.Store.YES));
 		

@@ -18,7 +18,6 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.xml.builders.FilteredQueryBuilder;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -33,7 +32,7 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import com.ricky.codelab.lucene.model.Shop;
 
-public class FilteredQueryDemo {
+public class BooleanQueryDemo {
 
 	public static void main(String[] args) {
 
@@ -73,10 +72,13 @@ public class FilteredQueryDemo {
 			Query city_query = new TermQuery (new Term ("city_id", 2+""));
 			System.out.println("city_query:"+city_query);
 			
-			Query query = null;
+			BooleanQuery booleanQuery = new BooleanQuery.Builder()
+				.add(name_query, Occur.MUST)
+				.add(city_query, Occur.MUST)
+				.build();
 			
 			// 搜索相似度最高的5条记录
-			TopDocs topDocs = isearcher.search(query, 5);
+			TopDocs topDocs = isearcher.search(booleanQuery, 5);
 			System.out.println("命中：" + topDocs.totalHits);
 			// 输出结果
 			ScoreDoc[] scoreDocs = topDocs.scoreDocs;

@@ -7,9 +7,9 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 
-import com.ricky.codelab.lucene.query.ShopSearcher;
+import com.ricky.codelab.lucene.query.ShopQuery;
 
-public class ShopSearcherTest {
+public class ShopQueryTest {
 
 	private String dirPath = "D:/Lucene_Test/shop/";
 	private Analyzer analyzer = new StandardAnalyzer();
@@ -17,9 +17,9 @@ public class ShopSearcherTest {
 	@Test
 	public void testQuery(){
 		
-		ShopSearcher searcher = new ShopSearcher(dirPath, analyzer);
+		ShopQuery searcher = new ShopQuery(dirPath, analyzer);
 		try {
-			searcher.query("KFC");
+			searcher.query("火锅");
 		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 		}
