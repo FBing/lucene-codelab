@@ -4,7 +4,7 @@
 
 	<groupId>com.ricky.codelab</groupId>
 	<artifactId>lucene</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>lucene</name>
@@ -12,6 +12,9 @@
 
 	<properties>
 		<lucene.version>5.4.1</lucene.version>
+		<java.version>1.8</java.version>
+		<maven.compiler.version>3.1</maven.compiler.version>
+		<junit.version>4.12</junit.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -40,7 +43,7 @@
 		<dependency>
 			<groupId>org.wltea.analyzer</groupId>
 			<artifactId>ik-analyzer5</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
@@ -57,14 +60,13 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -85,15 +87,17 @@
 						</configuration>
 					</execution>
 				</executions>
-
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.version}</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<testSource>${java.version}</testSource>
+					<testTarget>${java.version}</testTarget>
 				</configuration>
 			</plugin>
 		</plugins>
