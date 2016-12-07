@@ -1,2 +1,2 @@
 # lucene-samples
-lucene v5.4.1 study code & notes
+lucene v5.4 study code & notes
